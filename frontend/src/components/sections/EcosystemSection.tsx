@@ -102,6 +102,8 @@ const CARD_WIDTH = 340;
 const GAP = 24;
 const STEP = CARD_WIDTH + GAP;
 
+type FilterCategory = "All" | "Launch" | "Growth" | "Scale";
+
 const ServiceCard = ({ service }: { service: Service }) => {
   const IconComponent = service.icon;
   const cardRef = useRef<HTMLDivElement>(null);
@@ -225,16 +227,22 @@ const ServiceCard = ({ service }: { service: Service }) => {
 const EcosystemSection = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
-  const [scrollPos, setScrollPos] = useState(0);
+  const [activeFilter, setActiveFilter] = useState<FilterCategory>("All");
   const autoScrollRef = useRef<number | null>(null);
   const isDragging = useRef(false);
   const dragStartX = useRef(0);
   const dragScrollLeft = useRef(0);
 
+  const filterCategories: FilterCategory[] = ["All", "Launch", "Growth", "Scale"];
+
+  const filteredServices = activeFilter === "All" 
+    ? services 
+    : services.filter(s => s.category === activeFilter);
+
   // Auto-scroll logic
   useEffect(() => {
     const el = scrollRef.current;
-    if (!el) return;
+    if (!el || activeFilter !== "All") return; // Only auto-scroll when showing all
 
     let lastTime = 0;
     const speed = 0.5; // px per frame
@@ -245,7 +253,7 @@ const EcosystemSection = () => {
           const delta = time - lastTime;
           el.scrollLeft += speed * (delta / 16);
           // Loop: when we've scrolled past the original set, reset
-          const singleSetWidth = services.length * STEP;
+          const singleSetWidth = filteredServices.length * STEP;
           if (el.scrollLeft >= singleSetWidth) {
             el.scrollLeft -= singleSetWidth;
           }
@@ -261,7 +269,7 @@ const EcosystemSection = () => {
     return () => {
       if (autoScrollRef.current) cancelAnimationFrame(autoScrollRef.current);
     };
-  }, [isPaused]);
+  }, [isPaused, activeFilter, filteredServices.length]);
 
   // Arrow navigation
   const scrollBy = useCallback((direction: 'left' | 'right') => {
@@ -292,8 +300,10 @@ const EcosystemSection = () => {
     if (scrollRef.current) scrollRef.current.style.cursor = 'grab';
   };
 
-  // Duplicate services for seamless infinite scroll
-  const displayServices = [...services, ...services, ...services];
+  // Duplicate services for seamless infinite scroll (only when showing all)
+  const displayServices = activeFilter === "All" 
+    ? [...filteredServices, ...filteredServices, ...filteredServices]
+    : filteredServices;
 
   return (
     <section id="ecosystem" data-testid="index-ecosystem" className="py-24 md:py-32 bg-gradient-to-b from-white via-slate-50/50 to-white relative overflow-hidden">
@@ -351,32 +361,55 @@ const EcosystemSection = () => {
           </p>
         </motion.div>
 
+        {/* Pill Filters */}
+        <motion.div 
+          className="flex justify-center gap-2 mb-10"
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+        >
+          {filterCategories.map((category) => (
+            <button
+              key={category}
+              onClick={() => setActiveFilter(category)}
+              className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                activeFilter === category
+                  ? "bg-primary text-white shadow-lg shadow-primary/25"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800"
+              }`}
+            >
+              {category === "All" ? "View All" : category}
+            </button>
+          ))}
+        </motion.div>
+
         {/* Carousel Wrapper */}
         <div
           className="relative"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => { setIsPaused(false); handleMouseUp(); }}
         >
-          {/* Arrow Buttons */}
+          {/* Arrow Buttons - Positioned outside with solid white background */}
           <button
             onClick={() => scrollBy('left')}
-            className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/90 backdrop-blur-sm border border-slate-200 shadow-lg flex items-center justify-center hover:bg-white hover:border-slate-300 hover:shadow-xl transition-all duration-200 cursor-pointer group"
+            className="absolute -left-2 md:-left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white border border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.12)] flex items-center justify-center hover:bg-slate-50 hover:border-slate-300 hover:shadow-[0_6px_24px_rgba(0,0,0,0.15)] transition-all duration-200 cursor-pointer group"
             aria-label="Previous"
           >
-            <ChevronLeft className="w-5 h-5 text-slate-500 group-hover:text-slate-800 transition-colors" />
+            <ChevronLeft className="w-5 h-5 text-slate-600 group-hover:text-slate-900 transition-colors" />
           </button>
           <button
             onClick={() => scrollBy('right')}
-            className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/90 backdrop-blur-sm border border-slate-200 shadow-lg flex items-center justify-center hover:bg-white hover:border-slate-300 hover:shadow-xl transition-all duration-200 cursor-pointer group"
+            className="absolute -right-2 md:-right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white border border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.12)] flex items-center justify-center hover:bg-slate-50 hover:border-slate-300 hover:shadow-[0_6px_24px_rgba(0,0,0,0.15)] transition-all duration-200 cursor-pointer group"
             aria-label="Next"
           >
-            <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-slate-800 transition-colors" />
+            <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-slate-900 transition-colors" />
           </button>
 
           {/* Scrollable Track */}
           <div
             ref={scrollRef}
-            className="flex gap-6 overflow-x-auto scrollbar-hide px-8 md:px-16 py-2"
+            className="flex gap-6 overflow-x-auto scrollbar-hide px-12 md:px-20 py-2"
             style={{
               cursor: 'grab',
               scrollbarWidth: 'none',

@@ -96,31 +96,23 @@ const EcosystemOrbitalSection = () => {
               {/* Center ambient glow */}
               <circle cx={CX} cy={CY} r="60" fill="url(#hubGlow)" />
 
-              {/* Orbit rings — elegant concentric circles */}
+              {/* Orbit rings — elegant concentric circles with stronger visibility */}
               {[RADII[1], RADII[2], RADII[3]].map((r, i) => (
                 <g key={`ring-${i}`}>
                   <circle
                     cx={CX} cy={CY} r={r}
                     fill="none"
-                    stroke={`rgba(203, 213, 225, ${0.35 - i * 0.08})`}
-                    strokeWidth="1"
+                    stroke="#CBD5E1"
+                    strokeWidth="1.5"
                     strokeDasharray={i === 0 ? "0" : i === 1 ? "8 4" : "4 8"}
+                    opacity={0.6 - i * 0.1}
                   />
                 </g>
               ))}
 
-              {/* Stage labels on rings */}
-              <text x={CX} y={CY - RADII[1] - 12} textAnchor="middle" className="fill-slate-300 text-[10px] font-semibold tracking-[0.2em] uppercase select-none">
-                LAUNCH
-              </text>
-              <text x={CX + RADII[2] + 14} y={CY + 4} textAnchor="start" className="fill-slate-300 text-[10px] font-semibold tracking-[0.2em] uppercase select-none">
-                GROWTH
-              </text>
-              <text x={CX} y={CY + RADII[3] + 20} textAnchor="middle" className="fill-slate-300 text-[10px] font-semibold tracking-[0.2em] uppercase select-none">
-                SCALE
-              </text>
+              {/* Stage labels removed as per design requirement */}
 
-              {/* Connecting lines from center to nodes */}
+              {/* Connecting lines from center to nodes — stronger visibility */}
               {engines.map((engine, i) => {
                 const radius = RADII[engine.orbit as keyof typeof RADII];
                 const pos = getPos(engine.angle, radius);
@@ -137,14 +129,14 @@ const EcosystemOrbitalSection = () => {
                       stroke="none"
                     />
 
-                    {/* Base connection line */}
+                    {/* Base connection line — increased opacity */}
                     <line
                       x1={CX} y1={CY}
                       x2={pos.x} y2={pos.y}
-                      stroke={isHovered ? engine.color : "rgba(203, 213, 225, 0.25)"}
-                      strokeWidth={isHovered ? 1.5 : 0.75}
-                      strokeDasharray={isHovered ? "0" : "3 5"}
-                      opacity={isHovered ? 0.6 : 1}
+                      stroke={isHovered ? engine.color : "#CBD5E1"}
+                      strokeWidth={isHovered ? 2 : 1}
+                      strokeDasharray={isHovered ? "0" : "4 6"}
+                      opacity={isHovered ? 0.7 : 0.5}
                       style={{ transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)" }}
                       filter={isHovered ? "url(#orbGlow)" : undefined}
                     />
@@ -272,29 +264,96 @@ const EcosystemOrbitalSection = () => {
           </div>
         </div>
 
-        {/* Mobile: Compact Grid with Stage Grouping */}
-        <div className="md:hidden mb-14 px-2">
-          {["Launch", "Growth", "Scale"].map((stage) => (
-            <div key={stage} className="mb-6">
-              <p className="text-[10px] font-bold text-slate-300 tracking-[0.25em] uppercase mb-3 text-center">{stage}</p>
-              <div className="flex justify-center gap-6">
-                {engines.filter(e => e.stage === stage).map((engine) => {
-                  const Icon = engine.icon;
-                  return (
-                    <div key={engine.name} className="flex flex-col items-center gap-1.5">
-                      <div
-                        className="w-12 h-12 rounded-full flex items-center justify-center shadow-md"
-                        style={{ backgroundColor: engine.color, boxShadow: `0 4px 12px -3px ${engine.color}40` }}
-                      >
-                        <Icon className="w-5 h-5 text-white" strokeWidth={1.5} />
-                      </div>
-                      <span className="text-[10px] font-bold text-slate-500">{engine.name}</span>
-                    </div>
-                  );
-                })}
+        {/* Mobile: Connected Tree Layout with Central Hub */}
+        <div className="md:hidden mb-14 px-4">
+          <div className="relative flex flex-col items-center">
+            {/* Central Hub at top */}
+            <motion.div
+              className="relative mb-6 z-10"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={hasAnimated ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
+              transition={{ duration: 0.5, type: "spring" }}
+            >
+              <motion.div
+                className="absolute -inset-2 rounded-full"
+                style={{ background: "radial-gradient(circle, rgba(44,90,246,0.1) 0%, transparent 70%)" }}
+                animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.7, 0.5] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              />
+              <div className="w-16 h-16 rounded-full bg-white border border-slate-200 shadow-lg flex items-center justify-center relative z-10">
+                <img src={founderplaneLogo} alt="FounderPlane" className="w-10 h-10" />
               </div>
-            </div>
-          ))}
+            </motion.div>
+
+            {/* Vertical connector line from hub */}
+            <div className="w-px h-6 bg-gradient-to-b from-[#CBD5E1] to-transparent" />
+
+            {/* Stages with connected nodes */}
+            {["Launch", "Growth", "Scale"].map((stage, stageIndex) => {
+              const stageEngines = engines.filter(e => e.stage === stage);
+              return (
+                <motion.div 
+                  key={stage} 
+                  className="relative w-full max-w-[320px]"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={hasAnimated ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                  transition={{ duration: 0.4, delay: 0.3 + stageIndex * 0.15 }}
+                >
+                  {/* Stage label */}
+                  <p className="text-[10px] font-bold text-slate-400 tracking-[0.2em] uppercase mb-3 text-center">{stage}</p>
+                  
+                  {/* SVG for connection lines */}
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
+                    {/* Horizontal line connecting engines */}
+                    <line 
+                      x1="50%" y1="50" 
+                      x2={stageEngines.length === 2 ? "25%" : "50%"} 
+                      y2="50" 
+                      stroke="#CBD5E1" 
+                      strokeWidth="1.5" 
+                      strokeDasharray="4 4"
+                      opacity="0.5"
+                    />
+                    <line 
+                      x1="50%" y1="50" 
+                      x2={stageEngines.length === 2 ? "75%" : "50%"} 
+                      y2="50" 
+                      stroke="#CBD5E1" 
+                      strokeWidth="1.5" 
+                      strokeDasharray="4 4"
+                      opacity="0.5"
+                    />
+                  </svg>
+                  
+                  {/* Engine nodes */}
+                  <div className="flex justify-center gap-10 relative z-10">
+                    {stageEngines.map((engine) => {
+                      const Icon = engine.icon;
+                      return (
+                        <div key={engine.name} className="flex flex-col items-center gap-2">
+                          <motion.div
+                            className="w-12 h-12 rounded-full flex items-center justify-center shadow-md"
+                            style={{ backgroundColor: engine.color, boxShadow: `0 4px 12px -3px ${engine.color}40` }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <Icon className="w-5 h-5 text-white" strokeWidth={1.5} />
+                          </motion.div>
+                          <span className="text-[10px] font-bold text-slate-600">{engine.name}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Vertical connector to next stage */}
+                  {stageIndex < 2 && (
+                    <div className="flex justify-center my-4">
+                      <div className="w-px h-8 bg-gradient-to-b from-[#CBD5E1] via-[#CBD5E1] to-transparent opacity-50" />
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Anchor Box — Glassmorphic */}
