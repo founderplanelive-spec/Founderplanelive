@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
+import { Auth0Provider } from "@auth0/auth0-react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Boltguider from "./pages/services/Boltguider";
@@ -147,17 +148,29 @@ const AnimatedRoutes = () => {
 };
 
 const App = () => {
+  const domain = "founderplane.us.auth0.com";
+  const clientId = "XdMhiyOuvwXI0mRDfgZXGbzGtpMCA1CX";
+  const redirectUri = window.location.origin;
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <ScrollToTop />
-          <AnimatedRoutes />
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <Auth0Provider
+      domain={domain}
+      clientId={clientId}
+      authorizationParams={{
+        redirect_uri: redirectUri
+      }}
+    >
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <ScrollToTop />
+            <AnimatedRoutes />
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </Auth0Provider>
   );
 };
 
