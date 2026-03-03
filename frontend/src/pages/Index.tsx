@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/sections/Header";
 import HeroSection from "@/components/sections/HeroSection";
 import ProblemSection from "@/components/sections/ProblemSection";
@@ -24,6 +24,19 @@ const Index = () => {
   const [isDiagnosticOpen, setIsDiagnosticOpen] = useState(false);
 
   const openDiagnostic = () => setIsDiagnosticOpen(true);
+
+  // Listen for custom event from Footer
+  useEffect(() => {
+    const handleOpenDiagnostic = () => {
+      setIsDiagnosticOpen(true);
+    };
+    
+    window.addEventListener('openStageClarityCheck', handleOpenDiagnostic);
+    
+    return () => {
+      window.removeEventListener('openStageClarityCheck', handleOpenDiagnostic);
+    };
+  }, []);
 
   return (
     <main className="min-h-screen bg-background">

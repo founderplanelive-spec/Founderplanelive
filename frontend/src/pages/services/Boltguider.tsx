@@ -304,6 +304,15 @@ const Boltguider = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Listen for Stage Clarity Check event from Footer
+  useEffect(() => {
+    const handleOpenDiagnostic = () => {
+      setIsDiagnosticOpen(true);
+    };
+    window.addEventListener('openStageClarityCheck', handleOpenDiagnostic);
+    return () => window.removeEventListener('openStageClarityCheck', handleOpenDiagnostic);
+  }, []);
+
   return (
     <>
       <main className="min-h-screen bg-white overflow-x-hidden">

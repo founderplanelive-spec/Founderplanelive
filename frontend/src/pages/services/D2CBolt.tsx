@@ -216,6 +216,15 @@ const D2CBolt = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Listen for Stage Clarity Check event from Footer
+  useEffect(() => {
+    const handleOpenDiagnostic = () => {
+      setShowStageClarityCheck(true);
+    };
+    window.addEventListener('openStageClarityCheck', handleOpenDiagnostic);
+    return () => window.removeEventListener('openStageClarityCheck', handleOpenDiagnostic);
+  }, []);
+
   const openChat = () => {
     setShowLeadCapture(true);
   };
