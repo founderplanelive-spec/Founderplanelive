@@ -304,14 +304,23 @@ const Admin = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col items-center justify-center">
+        <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mb-4">
+          <Activity className="w-8 h-8 text-white animate-pulse" />
+        </div>
         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <p className="text-slate-600 mt-4">Loading Admin Portal...</p>
       </div>
     );
   }
 
-  // Not authenticated - show login
+  // Not authenticated - trigger login redirect
   if (!isAuthenticated) {
+    // Auto-redirect to Auth0 login after showing branded screen
+    setTimeout(() => {
+      loginWithRedirect();
+    }, 1000);
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center px-4">
         <motion.div
@@ -326,15 +335,19 @@ const Admin = () => {
             <h1 className="text-2xl font-bold text-slate-900 mb-2">
               FounderPlane Admin
             </h1>
-            <p className="text-slate-600">
+            <p className="text-slate-600 mb-4">
               Financial Command Center
             </p>
+            <div className="flex items-center justify-center gap-2 text-sm text-slate-500">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Redirecting to secure login...</span>
+            </div>
           </div>
           <Button
             onClick={() => loginWithRedirect()}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
           >
-            Sign In with Auth0
+            Sign In Now
           </Button>
         </motion.div>
       </div>
