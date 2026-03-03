@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Check, ArrowRight, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +38,18 @@ const BoltGuiderOnboarding = () => {
     monthlyRevenue: "",
     growthBottleneck: "",
     attemptedSolutions: "",
+
+  // Exclude this page from search engine indexing (client privacy)
+  useEffect(() => {
+    const meta = document.createElement('meta');
+    meta.name = 'robots';
+    meta.content = 'noindex, nofollow';
+    document.head.appendChild(meta);
+    
+    return () => {
+      document.head.removeChild(meta);
+    };
+  }, []);
     coreOffer: "",
     idealCustomer: "",
     runningPaidAds: "",

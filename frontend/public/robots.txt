@@ -1,14 +1,9 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
+# Allow all search engines
 User-agent: *
 Allow: /
+
+# Exclude BoltGuider Onboarding page (client privacy)
+Disallow: /boltguider-onboarding
+
+# Sitemap location
+Sitemap: https://founderplane.com/sitemap.xml
