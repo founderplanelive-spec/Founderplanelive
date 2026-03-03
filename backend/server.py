@@ -121,6 +121,103 @@ class ScrollEventStored(BaseModel):
     viewport_height: Optional[int] = None
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+# Financial Models
+class PaymentCreate(BaseModel):
+    client_id: Optional[str] = None
+    client_name: str
+    client_email: Optional[str] = None
+    amount: float
+    currency: str = "INR"
+    source: str  # Razorpay, Bank, Cash
+    type: str  # Monthly, One-Time
+    date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    notes: Optional[str] = None
+
+class Payment(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    client_id: Optional[str] = None
+    client_name: str
+    client_email: Optional[str] = None
+    amount: float
+    currency: str = "INR"
+    source: str
+    type: str
+    date: datetime
+    notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class Client(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    total_paid: float = 0.0
+    active_project: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class RevenueStats(BaseModel):
+    total_revenue: float
+    current_month_revenue: float
+    mrr: float
+    arr: float
+
+# BoltGuider Onboarding Models
+class BoltGuiderOnboardingCreate(BaseModel):
+    full_name: str
+    startup_name: str
+    website_or_deck: Optional[str] = None
+    current_stage: str
+    monthly_revenue: str
+    growth_bottleneck: str
+    attempted_solutions: str
+    core_offer: str
+    ideal_customer: str
+    running_paid_ads: str
+    team_structure: str
+
+class BoltGuiderOnboarding(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    full_name: str
+    startup_name: str
+    website_or_deck: Optional[str] = None
+    current_stage: str
+    monthly_revenue: str
+    growth_bottleneck: str
+    attempted_solutions: str
+    core_offer: str
+    ideal_customer: str
+    running_paid_ads: str
+    team_structure: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# Marketing Activity Models
+class MarketingLogCreate(BaseModel):
+    month: int
+    year: int
+    linkedin_outreach: int = 0
+    whatsapp_conversations: int = 0
+    newsletters_sent: int = 0
+    proposals_sent: int = 0
+
+class MarketingLog(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    month: int
+    year: int
+    linkedin_outreach: int = 0
+    whatsapp_conversations: int = 0
+    newsletters_sent: int = 0
+    proposals_sent: int = 0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ConversionMetrics(BaseModel):
+    lead_to_proposal_percent: float
+    close_rate_percent: float
+    clarity_to_close_percent: float
+
 # ============ ROUTES ============
 
 @api_router.get("/")
@@ -457,6 +554,300 @@ async def get_scroll_stats(
         "page_visitors": page_sessions,
         "section_stats": section_stats
     }
+
+# ============ FINANCIAL ENDPOINTS ============
+
+@api_router.post("/payments", response_model=Payment, status_code=201)
+async def create_payment(payment_data: PaymentCreate):
+    """Create a new payment entry"""
+    payment = Payment(**payment_data.model_dump())
+    doc = payment.model_dump()
+    doc['date'] = doc['date'].isoformat()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.payments.insert_one(doc)
+    
+    # Update or create client record
+    if payment_data.client_id:
+        client = await db.clients.find_one({"id": payment_data.client_id}, {"_id": 0})
+        if client:
+            new_total = client.get('total_paid', 0) + payment_data.amount
+            await db.clients.update_one(
+                {"id": payment_data.client_id},
+                {"$set": {"total_paid": new_total}}
+            )
+    
+    logger.info(f"Payment created: {payment.client_name} - {payment.amount} {payment.currency}")
+    return payment
+
+@api_router.get("/payments", response_model=List[Payment])
+async def get_payments(limit: int = 100):
+    """Get all payments"""
+    payments = await db.payments.find({}, {"_id": 0}).sort("date", -1).to_list(limit)
+    for payment in payments:
+        if isinstance(payment.get('date'), str):
+            payment['date'] = datetime.fromisoformat(payment['date'])
+        if isinstance(payment.get('created_at'), str):
+            payment['created_at'] = datetime.fromisoformat(payment['created_at'])
+    return payments
+
+@api_router.get("/payments/stats", response_model=RevenueStats)
+async def get_revenue_stats():
+    """Get revenue statistics"""
+    from datetime import date
+    import calendar
+    
+    # Total revenue
+    pipeline_total = [{"$group": {"_id": None, "total": {"$sum": "$amount"}}}]
+    result_total = await db.payments.aggregate(pipeline_total).to_list(1)
+    total_revenue = result_total[0]['total'] if result_total else 0.0
+    
+    # Current month revenue
+    now = datetime.now(timezone.utc)
+    first_day = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
+    last_day = datetime(now.year, now.month, calendar.monthrange(now.year, now.month)[1], 23, 59, 59, tzinfo=timezone.utc)
+    
+    pipeline_month = [
+        {"$match": {"date": {"$gte": first_day.isoformat(), "$lte": last_day.isoformat()}}},
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+    ]
+    result_month = await db.payments.aggregate(pipeline_month).to_list(1)
+    current_month_revenue = result_month[0]['total'] if result_month else 0.0
+    
+    # MRR (Monthly Recurring Revenue)
+    pipeline_mrr = [
+        {"$match": {"type": "Monthly"}},
+        {"$group": {"_id": "$client_id", "amount": {"$first": "$amount"}}},
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+    ]
+    result_mrr = await db.payments.aggregate(pipeline_mrr).to_list(1)
+    mrr = result_mrr[0]['total'] if result_mrr else 0.0
+    
+    # ARR = MRR * 12
+    arr = mrr * 12
+    
+    return RevenueStats(
+        total_revenue=total_revenue,
+        current_month_revenue=current_month_revenue,
+        mrr=mrr,
+        arr=arr
+    )
+
+@api_router.get("/clients", response_model=List[Client])
+async def get_clients():
+    """Get all clients with LTV"""
+    clients = await db.clients.find({}, {"_id": 0}).sort("total_paid", -1).to_list(100)
+    for client in clients:
+        if isinstance(client.get('created_at'), str):
+            client['created_at'] = datetime.fromisoformat(client['created_at'])
+    return clients
+
+@api_router.post("/clients", response_model=Client, status_code=201)
+async def create_client(client_data: Dict[str, Any]):
+    """Create a new client"""
+    client = Client(**client_data)
+    doc = client.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.clients.insert_one(doc)
+    return client
+
+@api_router.patch("/clients/{client_id}")
+async def update_client(client_id: str, update_data: Dict[str, Any]):
+    """Update client information"""
+    await db.clients.update_one(
+        {"id": client_id},
+        {"$set": update_data}
+    )
+    return {"message": "Client updated successfully"}
+
+# ============ RAZORPAY WEBHOOK ============
+
+@api_router.post("/webhooks/razorpay")
+async def razorpay_webhook(request: dict):
+    """Handle Razorpay webhook events"""
+    import hmac
+    import hashlib
+    
+    # Verify webhook signature (in production, get from headers)
+    webhook_secret = os.environ.get('RAZORPAY_WEBHOOK_SECRET', '')
+    
+    # For now, process the event (signature verification would happen in production)
+    event_type = request.get('event')
+    
+    if event_type == 'payment.captured':
+        payment_entity = request.get('payload', {}).get('payment', {}).get('entity', {})
+        
+        # Extract payment details
+        amount = payment_entity.get('amount', 0) / 100  # Razorpay amount is in paise
+        email = payment_entity.get('email', '')
+        notes = payment_entity.get('notes', {})
+        
+        # Try to match with existing client by email
+        client = await db.clients.find_one({"email": email}, {"_id": 0})
+        
+        if not client and email:
+            # Create new client
+            client_data = Client(
+                name=email.split('@')[0],
+                email=email,
+                total_paid=amount
+            )
+            doc = client_data.model_dump()
+            doc['created_at'] = doc['created_at'].isoformat()
+            await db.clients.insert_one(doc)
+            client_id = client_data.id
+        elif client:
+            client_id = client['id']
+            # Update total paid
+            new_total = client.get('total_paid', 0) + amount
+            await db.clients.update_one(
+                {"id": client_id},
+                {"$set": {"total_paid": new_total}}
+            )
+        else:
+            client_id = None
+        
+        # Create payment record
+        payment_type = notes.get('type', 'One-Time')
+        payment_data = Payment(
+            client_id=client_id,
+            client_name=email.split('@')[0] if email else 'Unknown',
+            client_email=email,
+            amount=amount,
+            currency='INR',
+            source='Razorpay',
+            type=payment_type,
+            date=datetime.now(timezone.utc),
+            notes=str(notes)
+        )
+        doc = payment_data.model_dump()
+        doc['date'] = doc['date'].isoformat()
+        doc['created_at'] = doc['created_at'].isoformat()
+        await db.payments.insert_one(doc)
+        
+        logger.info(f"Razorpay payment captured: {email} - ₹{amount}")
+    
+    return {"status": "success"}
+
+# ============ BOLTGUIDER ONBOARDING ENDPOINTS ============
+
+@api_router.post("/leads/boltguider", response_model=BoltGuiderOnboarding, status_code=201)
+async def create_boltguider_onboarding(data: BoltGuiderOnboardingCreate):
+    """Create a new BoltGuider onboarding submission"""
+    onboarding = BoltGuiderOnboarding(**data.model_dump())
+    doc = onboarding.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.boltguider_onboarding.insert_one(doc)
+    logger.info(f"BoltGuider onboarding: {onboarding.startup_name}")
+    return onboarding
+
+@api_router.get("/leads/boltguider", response_model=List[BoltGuiderOnboarding])
+async def get_boltguider_onboarding(limit: int = 100):
+    """Get all BoltGuider onboarding submissions"""
+    submissions = await db.boltguider_onboarding.find({}, {"_id": 0}).sort("created_at", -1).to_list(limit)
+    for submission in submissions:
+        if isinstance(submission.get('created_at'), str):
+            submission['created_at'] = datetime.fromisoformat(submission['created_at'])
+    return submissions
+
+# ============ CLARITY CHECK LEAD ENDPOINT ============
+
+@api_router.post("/leads/clarity", response_model=Lead, status_code=201)
+async def create_clarity_lead(lead_data: LeadCreate):
+    """Create a lead from Stage Clarity Check"""
+    lead_data.source_page = "Clarity Check"
+    lead = Lead(**lead_data.model_dump())
+    doc = lead.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    await db.leads.insert_one(doc)
+    logger.info(f"Clarity Check lead: {lead.email}")
+    return lead
+
+# ============ MARKETING ACTIVITY ENDPOINTS ============
+
+@api_router.post("/marketing/logs", response_model=MarketingLog, status_code=201)
+async def create_marketing_log(log_data: MarketingLogCreate):
+    """Create or update marketing activity log for a month"""
+    # Check if log exists for this month/year
+    existing = await db.marketing_logs.find_one(
+        {"month": log_data.month, "year": log_data.year},
+        {"_id": 0}
+    )
+    
+    if existing:
+        # Update existing log
+        await db.marketing_logs.update_one(
+            {"id": existing['id']},
+            {"$set": log_data.model_dump()}
+        )
+        log = MarketingLog(**{**existing, **log_data.model_dump()})
+    else:
+        # Create new log
+        log = MarketingLog(**log_data.model_dump())
+        doc = log.model_dump()
+        doc['created_at'] = doc['created_at'].isoformat()
+        await db.marketing_logs.insert_one(doc)
+    
+    logger.info(f"Marketing log updated: {log_data.month}/{log_data.year}")
+    return log
+
+@api_router.get("/marketing/logs", response_model=List[MarketingLog])
+async def get_marketing_logs(limit: int = 12):
+    """Get marketing activity logs"""
+    logs = await db.marketing_logs.find({}, {"_id": 0}).sort([("year", -1), ("month", -1)]).to_list(limit)
+    for log in logs:
+        if isinstance(log.get('created_at'), str):
+            log['created_at'] = datetime.fromisoformat(log['created_at'])
+    return logs
+
+@api_router.get("/marketing/conversions", response_model=ConversionMetrics)
+async def get_conversion_metrics(month: Optional[int] = None, year: Optional[int] = None):
+    """Calculate conversion metrics"""
+    from datetime import date
+    
+    # Use current month if not specified
+    if not month or not year:
+        now = datetime.now(timezone.utc)
+        month = now.month
+        year = now.year
+    
+    # Get marketing log for the month
+    marketing_log = await db.marketing_logs.find_one(
+        {"month": month, "year": year},
+        {"_id": 0}
+    )
+    proposals_sent = marketing_log['proposals_sent'] if marketing_log else 0
+    
+    # Get total clarity leads for the month
+    first_day = datetime(year, month, 1, tzinfo=timezone.utc)
+    import calendar
+    last_day = datetime(year, month, calendar.monthrange(year, month)[1], 23, 59, 59, tzinfo=timezone.utc)
+    
+    clarity_leads = await db.leads.count_documents({
+        "source_page": "Clarity Check",
+        "created_at": {"$gte": first_day.isoformat(), "$lte": last_day.isoformat()}
+    })
+    
+    # Get total unique clients who paid this month
+    payments_this_month = await db.payments.find({
+        "date": {"$gte": first_day.isoformat(), "$lte": last_day.isoformat()}
+    }, {"_id": 0}).to_list(1000)
+    
+    unique_clients_paid = len(set(p['client_id'] for p in payments_this_month if p.get('client_id')))
+    
+    # Calculate percentages
+    lead_to_proposal = (proposals_sent / clarity_leads * 100) if clarity_leads > 0 else 0.0
+    close_rate = (unique_clients_paid / proposals_sent * 100) if proposals_sent > 0 else 0.0
+    
+    # Overall clarity to close (all time)
+    total_clarity_leads = await db.leads.count_documents({"source_page": "Clarity Check"})
+    total_unique_clients = await db.clients.count_documents({"total_paid": {"$gt": 0}})
+    clarity_to_close = (total_unique_clients / total_clarity_leads * 100) if total_clarity_leads > 0 else 0.0
+    
+    return ConversionMetrics(
+        lead_to_proposal_percent=round(lead_to_proposal, 2),
+        close_rate_percent=round(close_rate, 2),
+        clarity_to_close_percent=round(clarity_to_close, 2)
+    )
 
 # Include the router in the main app
 app.include_router(api_router)
