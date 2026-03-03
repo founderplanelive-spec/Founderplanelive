@@ -38,6 +38,11 @@ const BoltGuiderOnboarding = () => {
     monthlyRevenue: "",
     growthBottleneck: "",
     attemptedSolutions: "",
+    coreOffer: "",
+    idealCustomer: "",
+    runningPaidAds: "",
+    teamStructure: "",
+  });
 
   // Exclude this page from search engine indexing (client privacy)
   useEffect(() => {
@@ -50,11 +55,6 @@ const BoltGuiderOnboarding = () => {
       document.head.removeChild(meta);
     };
   }, []);
-    coreOffer: "",
-    idealCustomer: "",
-    runningPaidAds: "",
-    teamStructure: "",
-  });
 
   const totalSteps = 4;
 
