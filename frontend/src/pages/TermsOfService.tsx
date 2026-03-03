@@ -24,7 +24,7 @@ const TermsOfService = () => {
         <h1 className="text-4xl md:text-5xl font-bold text-[#1D1D1F] mb-3 tracking-tight">
           Terms of Service
         </h1>
-        <p className="text-[#86868B] text-base mb-12">Effective Date: February 19, 2026</p>
+        <p className="text-[#86868B] text-base mb-12">Effective Date: March 3, 2026</p>
 
         <div className="space-y-10 text-[#424245] leading-[1.8] text-[15px]">
           {/* OVERVIEW */}
@@ -157,7 +157,7 @@ const TermsOfService = () => {
           <section>
             <h2 className="text-xl font-bold text-[#1D1D1F] mb-3">SECTION 14 - INDEMNIFICATION</h2>
             <p>
-              You agree to indemnify, defend and hold harmless REALMRISE GOLD ENTERPRISES PRIVATE LIMITED (FounderPlane) and our parent, subsidiaries, affiliates, partners, officers, directors, agents, contractors, licensors, service providers, subcontractors, suppliers, and employees, harmless from any claim or demand, including reasonable attorneys' fees, made by any third-party due to or arising out of your breach of these Terms of Service.
+              You agree to indemnify, defend and hold harmless REALMRISE GOLD ENTERPRISES PRIVATE LIMITED (FounderPlane) and our parent, subsidiaries, affiliates, partners, officers, directors, agents, contractors, licensors, service providers, subcontractors, suppliers, and employees from any claim or demand, including reasonable attorneys' fees, made by any third-party due to or arising out of your breach of these Terms of Service.
             </p>
           </section>
 
@@ -181,7 +181,7 @@ const TermsOfService = () => {
           <section>
             <h2 className="text-xl font-bold text-[#1D1D1F] mb-3">SECTION 17 - ENTIRE AGREEMENT</h2>
             <p>
-              The failure of us to exercise or enforce any right or provision of these Terms of Service shall not constitute a waiver of such right or provision. These Terms of Service and any policies or operating rules posted by us on this site constitutes the entire agreement and understanding between you and us.
+              The failure of us to exercise or enforce any right or provision of these Terms of Service shall not constitute a waiver of such right or provision. These Terms of Service and any policies or operating rules posted by us on this site constitute the entire agreement and understanding between you and us.
             </p>
           </section>
 

@@ -509,7 +509,7 @@ const Boltguider = () => {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1.2, duration: 0.5 }}
               >
-                LIMITED • FEBRUARY COHORT OPEN
+                LIMITED • MARCH COHORT OPEN
               </motion.p>
             </div>
           </div>
@@ -989,7 +989,7 @@ const Boltguider = () => {
                   viewport={{ once: true }}
                   transition={{ type: "spring", stiffness: 300, delay: 0.2 }}
                 >
-                  MOST POPULAR • FEB COHORT
+                  MOST POPULAR • MARCH COHORT
                 </motion.div>
                 
                 <h3 style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "14px", color: colors.signalBlue, marginBottom: "8px", marginTop: "8px" }}>
@@ -1190,11 +1190,11 @@ const Boltguider = () => {
 
             <div className="max-w-3xl mx-auto">
               {[
-                { q: "\"I have a full-time job. Can I still do this?\"", a: "Yes. The 90-Day Roadmap is engineered for \"Architects\" who build on the side. We structure your \"Foundation Phase\" to require only 3-5 focused hours per week. We don't ask you to quit; we ask you to focus." },
-                { q: "\"Do you build the tech/website for me?\"", a: "No. We are your Architects, not your contractors. We give you the Blueprint, the Strategy, and the Routing. We tell you what to build and how to build it, but you must execute. If you need builders, you can use your Ascent Credit with our vetted partners." },
-                { q: "\"What happens after the 90 days?\"", a: "You graduate. Most founders move into our FounderPlane Flight Deck (community) or hire us for specific sprints (Growth, Ops). But the goal of BoltGuider is to make you independent, not dependent." },
-                { q: "\"Why is there no refund policy?\"", a: "Because this is a high-touch, live service. We invest significant hours into your Industry Report and Strategy Sessions before we even finish. We commit our time to you, and we ask you to commit your resolve to us." },
-                { q: "\"I have no idea what I want to build yet. Is this for me?\"", a: "No. BoltGuider is for founders who have an idea (even a rough one) but are stuck on execution. If you are still searching for an idea, join our free newsletter first. Come back when you have a spark." }
+                { q: "I have a full-time job. Can I still do this?", a: "Yes. The 90-Day Roadmap is engineered for founders who are building alongside a 9-to-5. We structure your execution phase to require only 3-5 highly focused hours per week. We don't ask you to quit; we ask you to focus." },
+                { q: "Do you build the tech/website for me?", a: "No. We provide the infrastructure, not the manual labor. We hand you the exact blueprint, the strategy, and the tech stack routing. We tell you what to build and how to build it, but you must lead the execution. We give you the exact roadmap so you know what steps to take without wasting time or capital." },
+                { q: "What happens after the 90 days?", a: "You graduate. The ultimate goal of BoltGuider is to make you operationally independent, not dependent on us. Once your foundation is locked in, you can scale on your own, or you can seamlessly plug in FounderPlane's advanced execution engines (like BrandToFly) to accelerate your next stage of growth." },
+                { q: "Why is there no refund policy?", a: "Because this is a high-touch, live service. We invest significant hours into your Industry Report and Strategy Sessions before we even finish. We commit our time to you, and we ask you to commit your resolve to us." },
+                { q: "I have no idea what I want to build yet. Is this for me?", a: "No. BoltGuider is for founders who have a specific idea (even a rough one) but are paralyzed on execution. Take your time to find a real problem you want to solve and a gap in the market. Once you see that gap, come back to us. We will give you the exact roadmap to build and launch it." }
               ].map((faq, index) => (
                 <motion.div
                   key={index}

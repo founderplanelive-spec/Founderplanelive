@@ -24,7 +24,7 @@ const RefundPolicy = () => {
         <h1 className="text-4xl md:text-5xl font-bold text-[#1D1D1F] mb-3 tracking-tight">
           Refund & Cancellation Policy
         </h1>
-        <p className="text-[#86868B] text-base mb-12">Effective Date: February 20, 2026</p>
+        <p className="text-[#86868B] text-base mb-12">Effective Date: March 3, 2026</p>
 
         <div className="space-y-10 text-[#424245] leading-[1.8] text-[15px]">
           {/* OVERVIEW */}
@@ -87,6 +87,7 @@ const RefundPolicy = () => {
             <ul className="mt-4 space-y-2 list-disc pl-6">
               <li><span className="font-semibold text-[#1D1D1F]">Email:</span> support@founderplane.com</li>
               <li><span className="font-semibold text-[#1D1D1F]">Company:</span> REALMRISE GOLD ENTERPRISES PRIVATE LIMITED</li>
+              <li><span className="font-semibold text-[#1D1D1F]">Address:</span> No 08, Horamavu Agara, Rajanna Layout, Horamavu, Bangalore North, Bangalore, KA 560043, IN</li>
             </ul>
           </section>
         </div>

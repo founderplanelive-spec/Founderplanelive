@@ -24,7 +24,7 @@ const PrivacyPolicy = () => {
         <h1 className="text-4xl md:text-5xl font-bold text-[#1D1D1F] mb-3 tracking-tight">
           Privacy Policy
         </h1>
-        <p className="text-[#86868B] text-base mb-12">Effective Date: February 19, 2026</p>
+        <p className="text-[#86868B] text-base mb-12">Effective Date: March 3, 2026</p>
 
         <div className="space-y-10 text-[#424245] leading-[1.8] text-[15px]">
           {/* OVERVIEW */}
@@ -71,11 +71,11 @@ const PrivacyPolicy = () => {
           <section>
             <h2 className="text-xl font-bold text-[#1D1D1F] mb-3">HOW WE USE AND SHARE THE INFORMATION COLLECTED</h2>
             <p>We use Your Personal Information strictly for the following purposes:</p>
-            <ol className="mt-4 space-y-4 list-decimal pl-6">
+            <ul className="mt-4 space-y-4 list-disc pl-6">
               <li><span className="font-semibold text-[#1D1D1F]">To Provide Access to Our Ecosystem:</span> We use Your information to diagnose your business stage, map your operational architecture, deliver our systems (BoltGuider, D2CBolt, B2BBolt, BoltRunway, ScaleRunway), provide customer support, and fulfill service agreements. The legal basis for this is the performance of a contract and our legitimate business interests.</li>
               <li><span className="font-semibold text-[#1D1D1F]">To Improve Our Platform & Maintain Safety:</span> We use Your information to customize our consulting frameworks and improve the Platform. We also use it to prevent, detect, and investigate unauthorized use, fraud, or threats to our rights or the safety of our Users.</li>
               <li><span className="font-semibold text-[#1D1D1F]">To Communicate With You:</span> We may use Your phone number or email to communicate via text, WhatsApp, or email regarding Your discovery sessions, ecosystem updates, stage-specific recommendations, or responses to Your inquiries. You may opt-out of marketing emails at any time by contacting us.</li>
-            </ol>
+            </ul>
             <p className="mt-4">
               We do not use Personal Information for automated decision-making that produces legal effects concerning You. We may share generic aggregated demographic or business-stage information not linked to any personal identity with our trusted affiliates for business analysis.
             </p>
