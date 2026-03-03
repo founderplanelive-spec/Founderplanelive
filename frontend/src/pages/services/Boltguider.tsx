@@ -979,7 +979,7 @@ const Boltguider = () => {
                   variant="outline" 
                   className="w-full font-medium" 
                   style={{ borderColor: colors.jetBlack, color: colors.jetBlack }}
-                  onClick={() => window.open('https://rzp.io/rzp/YHzNWxe', '_blank')}
+                  onClick={() => window.open('https://rzp.io/rzp/ViSGzGfM', '_blank')}
                 >
                   BOOK STANDARD
                 </Button>
@@ -1037,7 +1037,7 @@ const Boltguider = () => {
                   className="w-full py-3 rounded-lg font-medium text-white flex items-center justify-center gap-2"
                   style={{ backgroundColor: colors.signalBlue, fontFamily: "'JetBrains Mono', monospace" }}
                   whileHover={{ backgroundColor: "#002FA7" }}
-                  onClick={() => window.open('https://rzp.io/rzp/YHzNWxe', '_blank')}
+                  onClick={() => window.open('https://rzp.io/rzp/Boltguiderkit', '_blank')}
                 >
                   JOIN ACCELERATOR
                   <ArrowRight className="w-4 h-4" />
