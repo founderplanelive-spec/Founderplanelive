@@ -149,7 +149,7 @@ const AnimatedRoutes = () => {
 
 const App = () => {
   const domain = "founderplane.us.auth0.com";
-  const clientId = "XdMhiyOuvwXI0mRDFgZXGbzGtpMCA1CX";
+  const clientId = "XdMhiyOuvwXIOmRDFgZXGbzGtpMCA1CX";
   const redirectUri = window.location.origin + '/admin';
 
   return (
